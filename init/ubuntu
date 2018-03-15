@@ -1,0 +1,84 @@
+#!/bin/sh
+# /etc/init.d/metabase
+### BEGIN INIT INFO
+# Provides:          Metabase
+# Required-Start:    $local_fs $network $named $time $syslog
+# Required-Stop:     $local_fs $network $named $time $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Description:       Metabase analytics and intelligence platform
+### END INIT INFO
+
+# where is the Metabase jar located?
+METABASE=/opt/metabase/metabase.jar
+
+# where will our environment variables be stored?
+METABASE_CONFIG=/etc/default/metabase
+
+# which (unprivileged) user should we run Metabase as?
+RUNAS=metabase
+
+# where should we store the pid/log files?
+PIDFILE=/var/run/metabase.pid
+LOGFILE=/var/log/metabase.log
+
+start() {
+  # ensure we only run 1 Metabase instance
+  if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE"); then
+    echo 'Metabase already running' >&2
+    return 1
+  fi
+  echo 'Starting Metabase...' >&2
+  # execute the Metabase jar and send output to our log
+  local CMD="nohup java -jar \"$METABASE\" &> \"$LOGFILE\" & echo \$!"
+  # load Metabase config before we start so our env vars are available
+  . "$METABASE_CONFIG"
+  # run our Metabase cmd as unprivileged user
+  su -c "$CMD" $RUNAS > "$PIDFILE"
+  echo 'Metabase started.' >&2
+}
+
+stop() {
+  # ensure Metabase is running
+  if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
+    echo 'Metabase not running' >&2
+    return 1
+  fi
+  echo 'Stopping Metabase ...' >&2
+  # send Metabase TERM signal
+  kill -15 $(cat "$PIDFILE") && rm -f "$PIDFILE"
+  echo 'Metabase stopped.' >&2
+}
+
+uninstall() {
+  echo -n "Are you really sure you want to uninstall Metabase? That cannot be undone. [yes|No] "
+  local SURE
+  read SURE
+  if [ "$SURE" = "yes" ]; then
+    stop
+    rm -f "$PIDFILE"
+    rm -f "$METABASE_CONFIG"
+    # keep logfile around
+    echo "Notice: log file is not be removed: '$LOGFILE'" >&2
+    update-rc.d -f metabase remove
+    rm -fv "$0"
+  fi
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  uninstall)
+    uninstall
+    ;;
+  retart)
+    stop
+    start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|uninstall}"
+esac
