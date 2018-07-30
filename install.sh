@@ -16,6 +16,7 @@ wget -O /opt/metabase/metabase.jar http://downloads.metabase.com/v0.29.3/metabas
 
 # download init.d
 wget -O /etc/init.d/metabase https://raw.githubusercontent.com/sjlu/metabase-install/master/init/ubuntu
+wget -O /etc/default/metabase https://raw.githubusercontent.com/sjlu/metabase-install/master/default/metabase
 chmod +x /etc/init.d/metabase
 update-rc.d metabase defaults
 
