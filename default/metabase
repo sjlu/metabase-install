@@ -1,0 +1,5 @@
+#!/bin/sh
+
+export MB_DB_TYPE=h2
+export MB_DB_FILE=/home/metabase/metabase.db
+export MB_EMOJI_IN_LOGS=false
