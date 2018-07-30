@@ -21,7 +21,6 @@ chmod +x /etc/init.d/metabase
 update-rc.d metabase defaults
 
 # prep initialization of metabase
-touch /etc/defaults/metabase
 touch /var/log/metabase.log
 chown metabase:metabase /var/log/metabase.log
 
