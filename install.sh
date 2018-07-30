@@ -11,6 +11,7 @@ apt-get install nginx default-jre
 useradd -m metabase
 
 # download metabase
+mkdir /opt/metabase
 wget -O /opt/metabase/metabase.jar http://downloads.metabase.com/v0.29.3/metabase.jar
 
 # download init.d
